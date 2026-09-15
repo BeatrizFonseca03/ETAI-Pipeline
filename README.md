@@ -1,5 +1,31 @@
 # Baseline Predictive Pipeline -- ETAI
 
+Beatriz Amaral Fonseca - 20260619
+
+
+Results of logistic regression:
+
+              precision    recall  f1-score   support
+
+           0       0.69      0.74      0.72       684
+           1       0.66      0.60      0.63       568
+
+    accuracy                           0.68      1252
+   macro avg       0.68      0.67      0.67      1252
+weighted avg       0.68      0.68      0.68      1252
+
+Results of decision tree:
+
+              precision    recall  f1-score   support
+
+           0       0.64      0.75      0.69       684
+           1       0.61      0.49      0.54       568
+
+    accuracy                           0.63      1252
+   macro avg       0.63      0.62      0.62      1252
+weighted avg       0.63      0.63      0.62      1252
+
+
 This is the **starting point** for your semester project: a small but *complete* predictive pipeline -- every piece a real project needs (entry point, config, data loading, preprocessing, model, evaluation), just kept as simple as possible for now.
 
 The task: predict two-year recidivism using ProPublica's COMPAS
