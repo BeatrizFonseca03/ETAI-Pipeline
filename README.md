@@ -2,28 +2,29 @@
 
 Beatriz Amaral Fonseca - 20260619
 
+## Week 2
+---
 
-Results of logistic regression:
+## Results: Logistic Regression vs Decision Tree
 
-              precision    recall  f1-score   support
+| Model | Train Accuracy | Test Accuracy | Gap (train - test) |
+| :--- | :---: | :---: | :---: |
+| **Logistic Regression** | 0.679 | **0.678** | +0.001 |
+| **Decision Tree** | **0.829** | 0.629 | **+0.200** |
 
-           0       0.69      0.74      0.72       684
-           1       0.66      0.60      0.63       568
+### Fairness Audit: False Positive Rate (FPR) by Race
+*(Share of people who did NOT reoffend, but were predicted to)*
 
-    accuracy                           0.68      1252
-   macro avg       0.68      0.67      0.67      1252
-weighted avg       0.68      0.68      0.68      1252
+* **African-American (n=303):**
+  * Logistic Regression: `FPR = 0.33` | Decision Tree: `FPR = 0.27` | COMPAS: `FPR = 0.44`
+* **Caucasian (n=232):**
+  * Logistic Regression: `FPR = 0.24` | Decision Tree: `FPR = 0.23` | COMPAS: `FPR = 0.25`
 
-Results of decision tree:
+---
 
-              precision    recall  f1-score   support
+### Conclusion
 
-           0       0.64      0.75      0.69       684
-           1       0.61      0.49      0.54       568
-
-    accuracy                           0.63      1252
-   macro avg       0.63      0.62      0.62      1252
-weighted avg       0.63      0.63      0.62      1252
+The Decision Tree looked great on training data (0.829), but dropped significantly on test data (0.629). It clearly just memorized the examples instead of truly learning, ending up worse on unseen data than simple Logistic Regression (0.678).
 
 
 This is the **starting point** for your semester project: a small but *complete* predictive pipeline -- every piece a real project needs (entry point, config, data loading, preprocessing, model, evaluation), just kept as simple as possible for now.
