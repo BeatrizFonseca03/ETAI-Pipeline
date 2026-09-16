@@ -9,8 +9,8 @@ Beatriz Amaral Fonseca - 20260619
 
 | Model | Train Accuracy | Test Accuracy | Gap (train - test) |
 | :--- | :---: | :---: | :---: |
-| **Logistic Regression** | 0.679 | **0.678** | +0.001 |
-| **Decision Tree** | **0.829** | 0.629 | **+0.200** |
+| **Logistic Regression** | 0.679 | 0.678 | +0.001 |
+| **Decision Tree** | 0.829 | 0.629 | +0.200 |
 
 ### Fairness Audit: False Positive Rate (FPR) by Race
 *(Share of people who did NOT reoffend, but were predicted to)*
@@ -26,6 +26,7 @@ Beatriz Amaral Fonseca - 20260619
 
 The Decision Tree looked great on training data (0.829), but dropped significantly on test data (0.629). It clearly just memorized the examples instead of truly learning, ending up worse on unseen data than simple Logistic Regression (0.678).
 
+---
 
 This is the **starting point** for your semester project: a small but *complete* predictive pipeline -- every piece a real project needs (entry point, config, data loading, preprocessing, model, evaluation), just kept as simple as possible for now.
 
