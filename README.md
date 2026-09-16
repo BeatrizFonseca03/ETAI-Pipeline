@@ -12,7 +12,8 @@ Beatriz Amaral Fonseca - 20260619
 | **Logistic Regression** | 0.679 | 0.678 | +0.001 |
 | **Decision Tree** | 0.829 | 0.629 | +0.200 |
 
-### Fairness Audit: False Positive Rate (FPR) by Race
+
+### False Positive Rate (FPR) by Race
 *(Share of people who did NOT reoffend, but were predicted to)*
 
 * **African-American (n=303):**
@@ -20,7 +21,6 @@ Beatriz Amaral Fonseca - 20260619
 * **Caucasian (n=232):**
   * Logistic Regression: `FPR = 0.24` | Decision Tree: `FPR = 0.23` | COMPAS: `FPR = 0.25`
 
----
 
 ### Conclusion
 
