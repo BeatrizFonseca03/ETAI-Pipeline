@@ -5,7 +5,7 @@ Beatriz Amaral Fonseca - 20260619
 ## Week 2
 ---
 
-## Results: Logistic Regression vs Decision Tree
+### Results: Logistic Regression vs Decision Tree
 
 | Model | Train Accuracy | Test Accuracy | Gap (train - test) |
 | :--- | :---: | :---: | :---: |
