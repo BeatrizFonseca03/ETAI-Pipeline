@@ -38,7 +38,6 @@ This project focuses on developing a machine learning pipeline to predict two-ye
 
 ---
 ## Week 2
----
 
 ### Results: Logistic Regression vs Decision Tree
 
@@ -63,7 +62,6 @@ The Decision Tree looked great on training data (0.829), but dropped significant
 
 ---
 ## Week 3
----
 
 ### Preprocessing & Data Cleaning Decisions
 Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_preprocessing.ipynb`, deterministic cleaning rules were integrated into `clean_dataset()` before modeling:
@@ -73,7 +71,6 @@ Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_prepro
 * **Category Canonicalization:** Unified inconsistent casing and whitespace across categorical features (e.g., standardizing demographic variants into `African-American` and `Caucasian`), mapping placeholder tokens like `?` and `-` to `NaN`.
 * **Multicollinearity Pruning:** Dropped strictly redundant features (`prior_offenses`, `age_in_months`, and `juvenile_total`) to prevent collinearity issues and inflated variance.
 
----
 
 ### Results with Cleaned Dataset (Logistic Regression)
 
@@ -93,7 +90,6 @@ Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_prepro
 | **Other** | 44 | 0.07 | 0.14 |
 | **Asian** | 5 | 0.20 | 0.20 |
 
----
 
 ### Conclusion
 
