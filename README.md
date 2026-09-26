@@ -78,7 +78,7 @@ Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_prepro
 | **Accuracy** | 0.662 | 0.699 | -0.038 |
 
 
-#### False Positive Rate (FPR) by Race
+### False Positive Rate (FPR) by Race
 *(Share of defendants who did NOT reoffend, but were predicted to)*
 
 | Demographic Group | Sample ($N$) | Our Model FPR | COMPAS FPR |
