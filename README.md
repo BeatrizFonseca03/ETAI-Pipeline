@@ -69,14 +69,13 @@ Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_prepro
 * **Removed Duplicates:** Dropped 72 repeated records across the dataset (`7,286 → 7,214` rows).
 * **Domain Rule Enforcements:** Converted implausible entries into `NaN`, including negative juvenile counts, ages outside 18–100, decile scores outside 1–10, and priors counts above 60.
 * **Category Canonicalization:** Unified inconsistent casing and whitespace across categorical features (e.g., standardizing demographic variants into `African-American` and `Caucasian`), mapping placeholder tokens like `?` and `-` to `NaN`.
-* **Multicollinearity Pruning:** Dropped strictly redundant features (`prior_offenses`, `age_in_months`, and `juvenile_total`) to prevent collinearity issues and inflated variance.
 
 
 ### Results with Cleaned Dataset (Logistic Regression)
 
 | Metric | Train | Test | Gap (train - test) |
 | :--- | :---: | :---: | :---: |
-| **Accuracy** | 0.662 | **0.699** | -0.038 |
+| **Accuracy** | 0.662 | 0.699 | -0.038 |
 
 
 #### False Positive Rate (FPR) by Race
@@ -84,8 +83,8 @@ Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_prepro
 
 | Demographic Group | Sample ($N$) | Our Model FPR | COMPAS FPR |
 | :--- | :---: | :---: | :---: |
-| **African-American** | 289 | **0.27** | **0.42** |
-| **Caucasian** | 235 | **0.17** | **0.23** |
+| **African-American** | 289 | 0.27 | 0.42 |
+| **Caucasian** | 235 | 0.17 | 0.23 |
 | **Hispanic** | 78 | 0.13 | 0.26 |
 | **Other** | 44 | 0.07 | 0.14 |
 | **Asian** | 5 | 0.20 | 0.20 |
@@ -93,5 +92,5 @@ Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_prepro
 
 ### Conclusion
 
-* **Impact of Data Hygiene:** Implementing `clean_dataset()` eliminated fragmented demographic categories (such as `AFRICAN-AMERICAN`, `African American`, `?`, and `-`), aggregating defendants into consistent cohorts. Test accuracy improved from **0.678 to 0.699** (~70%).
-* **Persistent Fairness Disparity:** Despite canonicalizing race, removing corrupted records, and completely excluding race from the model's training inputs, the racial disparity remains: African-American defendants who do not recidivate are still significantly more likely to be falsely predicted as recidivists (`FPR = 0.27`) compared to Caucasian defendants (`FPR = 0.17`).
+* Implementing `clean_dataset()` eliminated fragmented demographic categories (such as `AFRICAN-AMERICAN`, `African American`, `?`, and `-`), aggregating defendants into consistent cohorts. Test accuracy improved from 0.678 to 0.699 (~70%).
+* Despite canonicalizing race, removing corrupted records, and completely excluding race from the model's training inputs, the racial disparity remains: African-American defendants who do not recidivate are still significantly more likely to be falsely predicted as recidivists (`FPR = 0.27`) compared to Caucasian defendants (`FPR = 0.17`).
