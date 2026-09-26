@@ -5,7 +5,7 @@
 
 ## Project Overview
 
-This project focuses on developing, tuning, and auditing a machine learning pipeline to predict two-year criminal recidivism (`two_year_recid`) using ProPublica's COMPAS dataset. The primary objective is to evaluate model accuracy while auditing algorithmic bias (*fairness audit*) across demographic groups (`race`), ensuring that race is strictly kept out of training features and used exclusively for auditing.
+This project focuses on developing a machine learning pipeline to predict two-year criminal recidivism (`two_year_recid`) using ProPublica's COMPAS dataset. The primary objective is to evaluate model accuracy while auditing algorithmic bias (*fairness audit*) across demographic groups (`race`), ensuring that race is strictly kept out of training features and used exclusively for auditing.
 
 
 ## Project structure
