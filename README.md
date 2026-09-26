@@ -68,17 +68,10 @@ The Decision Tree looked great on training data (0.829), but dropped significant
 ### Preprocessing & Data Cleaning Decisions
 Based on the diagnostic findings from `01_eda_introduction.ipynb` and `02_preprocessing.ipynb`, deterministic cleaning rules were integrated into `clean_dataset()` before modeling:
 
-| Column / Target | Issue Identified | Mechanism | Action Implemented | Outcome |
-| :--- | :--- | :---: | :--- | :--- |
-| **Full Rows** | 72 exact and repeated `id` duplicate records | Data Entry | `drop_duplicates(subset="id", keep="first")` | 72 duplicate rows removed (7,286 → 7,214) |
-| **`age`** | Values outside plausible range (< 18 or > 100) | Domain Rule | Replaced invalid entries with `NaN` | 9 invalid values converted to `NaN` |
-| **`juv_fel_count`** | Negative offense counts (< 0) | Domain Rule | Replaced negative values with `NaN` | 5 invalid values converted to `NaN` |
-| **`decile_score`** | Values outside official 1–10 scale | Domain Rule | Replaced invalid values with `NaN` | 6 invalid values converted to `NaN` |
-| **`priors_count`** | Text placeholders (`-`) and extreme values (> 60) | Domain Rule / MNAR | Coerced text tokens and extreme values to `NaN` | Converted placeholders and outliers to `NaN` |
-| **Categoricals** | Inconsistent casing/whitespace and invalid tokens (`?`, `-`) | Data Entry | Canonicalized using standard mappings (`_canonicalize_categories`) | Standardized categories; placeholder tokens set to `NaN` |
-| **`prior_offenses`** | Perfectly redundant with `priors_count` | Multicollinearity | Dropped feature | Removed pairwise duplicate feature |
-| **`age_in_months`** | Deterministic linear function of `age` | Multicollinearity | Dropped feature | Removed linear dependency |
-| **`juvenile_total`** | Exact sum of the three juvenile offense counts | Multicollinearity | Dropped feature | Mitigated extreme linear multicollinearity |
+* **Removed Duplicates:** Dropped 72 repeated records across the dataset (`7,286 → 7,214` rows).
+* **Domain Rule Enforcements:** Converted implausible entries into `NaN`, including negative juvenile counts, ages outside 18–100, decile scores outside 1–10, and priors counts above 60.
+* **Category Canonicalization:** Unified inconsistent casing and whitespace across categorical features (e.g., standardizing demographic variants into `African-American` and `Caucasian`), mapping placeholder tokens like `?` and `-` to `NaN`.
+* **Multicollinearity Pruning:** Dropped strictly redundant features (`prior_offenses`, `age_in_months`, and `juvenile_total`) to prevent collinearity issues and inflated variance.
 
 ---
 
