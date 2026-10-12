@@ -127,23 +127,14 @@ _ENCODERS = {
 
 def build_preprocessor(preprocessing_config: dict) -> ColumnTransformer:
     """
-    Factory: builds a leak-safe ColumnTransformer for the chosen encoder/scaler pair --
-    read from `config.yaml`'s `preprocessing` section (chosen there, not hardcoded
-    here). Every encoder tolerates unseen
-    categories at transform time. Nothing is fit here: fitting happens later, on the
-    training part of each CV fold only, because this object is placed *inside* the
-    model's sklearn Pipeline (see main.py).
+    Builds the unfitted ColumnTransformer described by `preprocessing_config`: imputation and
+    scaling for numeric columns, imputation and encoding for categorical ones, and the
+    missingness flags passed through. Every encoder tolerates unseen categories.
     """
-    encoder_name = preprocessing_config["encoder"]
-    scaler_name = preprocessing_config["scaler"]
-    numeric_features = preprocessing_config["numeric_features"]
-    categorical_features = preprocessing_config["categorical_features"]
-    mnar_indicator_sources = preprocessing_config.get("mnar_indicator_sources", [])
     imputation = preprocessing_config.get("imputation", {})
-
-    scaler_factory = _SCALERS[scaler_name]
+    scaler_factory = _SCALERS[preprocessing_config["scaler"]]
     scaler = scaler_factory() if callable(scaler_factory) else scaler_factory
-    encoder = _ENCODERS[encoder_name](preprocessing_config.get("random_state"))
+    encoder = _ENCODERS[preprocessing_config["encoder"]](preprocessing_config.get("random_state"))
 
     numeric_pipeline = Pipeline([
         ("impute", SimpleImputer(strategy=imputation.get("numeric_strategy", "median"))),
@@ -153,27 +144,19 @@ def build_preprocessor(preprocessing_config: dict) -> ColumnTransformer:
         ("impute", SimpleImputer(strategy=imputation.get("categorical_strategy", "most_frequent"))),
         ("encode", encoder),
     ])
-
-    indicator_cols = [f"{c}_was_missing" for c in mnar_indicator_sources]
+    indicator_cols = [f"{c}_was_missing" for c in preprocessing_config.get("mnar_indicator_sources", [])]
 
     return ColumnTransformer([
-        ("numeric", numeric_pipeline, numeric_features),
-        ("categorical", categorical_pipeline, categorical_features),
+        ("numeric", numeric_pipeline, preprocessing_config["numeric_features"]),
+        ("categorical", categorical_pipeline, preprocessing_config["categorical_features"]),
         ("indicators", "passthrough", indicator_cols),
     ])
 
+
 def split_dev_test(X, y, extras, test_size: float, random_state: int):
     """
-    Sets the final test set aside (week 4 -- replaces week 2/3's `split_train_test`).
-
-    Stratified split of X, y and the extras frame (race/score_text, kept for the fairness
-    report) together, so all three stay row-aligned. Returns a *development* set and a
-    *locked test set*:
-      - development set: everything we're allowed to learn from and compare models on.
-        Cross-validation (src/evaluate.py) splits it again into train/validation folds.
-      - locked test set: never used to fit, tune, compare or choose anything. Its size and seed live in config.yaml's `test_set` section and are never changed after today.
+    Stratified split into a development set, used for every decision, and a locked test set,
+    used only for the final assessment. Returns X_dev, X_test, y_dev, y_test, extras_dev,
+    extras_test, row-aligned.
     """
-    X_dev, X_test, y_dev, y_test, extras_dev, extras_test = train_test_split(
-        X, y, extras, test_size=test_size, random_state=random_state, stratify=y
-    )
-    return X_dev, X_test, y_dev, y_test, extras_dev, extras_test
+    return train_test_split(X, y, extras, test_size=test_size, random_state=random_state, stratify=y)
