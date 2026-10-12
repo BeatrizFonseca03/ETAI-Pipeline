@@ -1,8 +1,11 @@
-"""Model construction."""
+"""Model construction: the model alone (`build_model`) and preprocessing + model (`build_pipeline`)."""
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 from sklearn.tree import DecisionTreeClassifier
+
+from src.preprocessing import build_preprocessor
 
 _MODELS = {
     # always predicts the most frequent class -- the floor every real model must beat
