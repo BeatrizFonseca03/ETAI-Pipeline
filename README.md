@@ -87,7 +87,7 @@ A 20% final test set was separated and kept locked to avoid any use during the e
 |---|:---:|:---:|:---:|
 | Dummy | — | 0.549 ± 0.000 | +0.000 |
 | Logistic regression | 0.699 | 0.672 ± 0.013 | +0.003 |
-| Decision tree | 0.629 | 0.610 ± 0.017 | +0.086 |
+| Decision tree | 0.629 | 0.610 ± 0.018 | +0.086 |
 | Random forest | — | 0.650 ± 0.018 | +0.083 |
 
 The cross-validation accuracy (`0.672`) is much more reliable than the single Week 3 holdout score (`0.699`). A single split score can be overly optimistic simply due to how the rows are divided, while cross-validation tests the pipeline on all development folds and provides a real variance estimate (`±0.013`). The conclusion from Weeks 2 and 3 remains true under cross-validation: Logistic Regression continues to be the best model. It clearly beats the Dummy baseline (`0.549`), gets better validation accuracy than the Decision Tree (`0.610`) and Random Forest (`0.650`), and shows no signs of overfitting (gap of `+0.003` versus over `+0.080` for the tree models).
@@ -100,6 +100,6 @@ How the pipeline tunes (Optuna, search space, number of trials, inner folds) and
 
 | Model | Default: CV mean ± std | Tuned: nested CV mean ± std | Tuning score (best trial) | Optimism | Chosen hyperparameters |
 |---|---|---|---|---|---|
-| Decision tree | ... | ... | ... | ... | ... |
+| Decision tree | 0.610 ± 0.018 | 0.672 ± 0.017 | 0.679 | +0.002 | model__max_depth: 6, model__min_samples_leaf: 101, model__criterion: gini |
 | Logistic regression | ... | ... | ... | ... | ... |
 | Random forest | ... | ... | ... | ... | ... |

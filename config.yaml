@@ -91,7 +91,7 @@ preprocessing:
 model:
   # one of: "dummy" (majority-class floor), "logistic_regression", "decision_tree", "random_forest"
   # (random forest: sensible defaults, untuned -- see the example below)
-  type: "decision_tree"                             # dummy | logistic_regression | decision_tree | random_forest
+  type: "decision_tree"      # dummy | logistic_regression | decision_tree | random_forest
   params: 
     #max_iter: 2000
     random_state: 42
@@ -106,8 +106,8 @@ model:
 tuning:
   enabled: true
   n_trials: 30
-  n_splits: 5                                       # folds that score each candidate
-  random_state: 42                                  # seeds the sampler and those folds
+  n_splits: 5            # folds that score each candidate
+  random_state: 42       # seeds the sampler and those folds
   # Keys are Pipeline parameter names. Types: int / float (low, high, log) or categorical (choices).
   search_spaces:
     decision_tree:
