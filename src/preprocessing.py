@@ -160,3 +160,25 @@ def split_dev_test(X, y, extras, test_size: float, random_state: int):
     extras_test, row-aligned.
     """
     return train_test_split(X, y, extras, test_size=test_size, random_state=random_state, stratify=y)
+
+
+def add_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Adds deterministic engineered features row by row.
+    Formulas use only the current row's values and learn no dataset statistics (no mean, median or quantiles).
+    """
+    out = df.copy()
+
+    # Taxa de antecedentes por ano de vida adulta
+    out["priors_per_adult_year"] = out["priors_count"] / (out["age"] - 17).clip(lower=1)
+
+    # Soma da carga criminal junevil
+    out["juv_total"] = (
+        out["juv_fel_count"].fillna(0)
+        + out["juv_misd_count"].fillna(0)
+        + out["juv_other_count"].fillna(0)
+    )
+
+    # Indicador binário de cadastro na juventude
+    out["juv_record"] = (out["juv_total"] > 0).astype(int)
+
+    return out
