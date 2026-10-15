@@ -91,7 +91,7 @@ A 20% final test set was separated and kept locked to avoid any use during the e
 | Decision tree | 0.629 | 0.610 ± 0.018 | +0.086 |
 | Random forest | — | 0.650 ± 0.018 | +0.083 |
 
-The cross-validation accuracy (`0.672`) is much more reliable than the single Week 3 holdout score (`0.699`). A single split score can be overly optimistic simply due to how the rows are divided, while cross-validation tests the pipeline on all development folds and provides a real variance estimate (`±0.013`). The conclusion from Weeks 2 and 3 remains true under cross-validation: Logistic Regression continues to be the best model. It clearly beats the Dummy baseline (`0.549`), gets better validation accuracy than the Decision Tree (`0.610`) and Random Forest (`0.650`), and shows no signs of overfitting (gap of `+0.003` versus over `+0.080` for the tree models).
+The cross-validation accuracy is much more reliable than the single Week 3 holdout score. A single split score can be overly optimistic simply due to how the rows are divided, while cross-validation tests the pipeline on all development folds and provides a real variance estimate. The conclusion from Weeks 2 and 3 remains true under cross-validation: Logistic Regression continues to be the best model. It clearly beats the Dummy baseline, gets better validation accuracy than the Decision Tree and Random Forest, and shows no signs of overfitting.
 
 
 ## Week 5
@@ -119,5 +119,5 @@ The Decision Tree and Random Forest improved significantly with hyperparameter t
 | Oblique random forest | 0.647 ± 0.011 | 0.679 ± 0.013 | 0.683 | model__estimator__tree__max_depth: 6, model__estimator__tree__min_samples_leaf: 3, model__estimator__project__n_components: 5 |
 | AdaBoost | 0.676 ± 0.012 | 0.679 ± 0.013 | 0.686 | model__estimator__max_depth: 4, model__n_estimators: 115, model__learning_rate: 0.18066055341198425 |
 
-The tuned Random Forest is the strongest candidate, reaching the highest accuracy at 0.681 ± 0.015 with minimal overfitting. Its lead over Oblique Random Forest and AdaBoost is only +0.002, which is smaller than the cross-validation standard deviation and within fold-to-fold variance. Random Forest relies on deeper regularized trees to lower variance, whereas AdaBoost needs shallow trees with a small learning rate to avoid noise. To conslude, Random Forest should be selected, reporting its honest nested CV score rather than the optimistic best trial.
+The tuned Random Forest is the strongest candidate, reaching the highest accuracy at 0.681 ± 0.015 with minimal overfitting. Its lead over Oblique Random Forest and AdaBoost is only +0.002, which is smaller than the cross-validation standard deviation and within fold-to-fold variance. Random Forest relies on deeper regularized trees to lower variance, whereas AdaBoost needs shallow trees with a small learning rate to avoid noise. To conclude, Random Forest should be selected, reporting its honest nested CV score rather than the optimistic best trial.
 
