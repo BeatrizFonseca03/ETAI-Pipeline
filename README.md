@@ -16,6 +16,7 @@ This project focuses on developing a machine learning pipeline to predict two-ye
 | **4** | Honest model evaluation & cross-validation | Replaces the optimistic single holdout split with a 20% locked test set and stratified 5-fold cross-validation on the development set, adding the Dummy baseline and registering Random Forest. |
 | **5** | Hyperparameter tuning without leakage | Introduces automated tuning with Optuna; instead of static defaults, models are optimized via nested cross-validation to tune parameters honestly without data leakage or optimism bias. |
 | **6** | Ensembles in depth | Expands beyond a single tuned tree to ensemble architectures (`oblique_random_forest` and `adaboost`); adds corrected paired t-tests to verify if performance gains exceed cross-validation variance. |
+| **7** | Gradient boosting + evaluating with probabilities | Introduces `gradient_boosting`, `hist_gradient_boosting`, and `naive_bayes`; switches evaluation to multi-metric out-of-fold probabilities with `roc_auc` as the primary selection metric, adding automated scoreboard logging (`runs.csv`) and paired t-test model comparisons. |
 
 
 ## Week 2
@@ -124,3 +125,31 @@ The tuned Random Forest is the strongest candidate, reaching the highest accurac
 | AdaBoost | 0.679 ± 0.013 | 0.677 ± 0.010 | -0.002 |
 
 Logistic Regression was the only model that improved after feature engineering, while Random Forest and AdaBoost showed slight decreases in performance. Overall, the differences were small relative to the variability across cross-validation folds, suggesting a limited impact of feature engineering. This is consistent with theory, as Logistic Regression can benefit from explicit interaction terms and ratios, whereas tree-based models can capture non-linear relationships and certain interactions directly. However, the observed decreases do not necessarily indicate that the engineered features were redundant or detrimental.
+
+
+## Week 7
+
+### Model Scoreboard
+| Model | Tuned | Selection Metric (ROC-AUC) | Fold Std | Untuned | Baseline Floor |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `gradient_boosting` | True | 0.727 | 0.014 | 0.727 | 0.500 |
+| `hist_gradient_boosting` | True | 0.727 | 0.016 | 0.717 | 0.500 |
+| `adaboost` | True | 0.726 | 0.016 | 0.723 | 0.500 |
+| `oblique_random_forest` | True | 0.726 | 0.015 | 0.685 | 0.500 |
+| `random_forest` | True | 0.726 | 0.013 | 0.683 | 0.500 |
+| `logistic_regression` | False | 0.719 | 0.014 | 0.719 | 0.500 |
+| `decision_tree` | True | 0.717 | 0.017 | 0.604 | 0.500 |
+| `naive_bayes` | True | 0.705 | 0.012 | 0.685 | 0.500 |
+| `dummy` | False | 0.500 | 0.000 | 0.500 | 0.500 |
+
+**Selection metric**:
+I chose **ROC-AUC** because the goal with COMPAS is to rank people by their risk of reoffending, not just guess "yes" or "no" at a fixed 0.5 threshold. Accuracy only checks if predictions are above or below 0.5, while ROC-AUC evaluates how well the model orders probabilities across all cutoffs. It is also more stable across folds, which makes comparing the models fairer.
+
+
+
+
+
+
+
+
+
