@@ -132,18 +132,18 @@ Logistic Regression was the only model that improved after feature engineering, 
 ### Model Scoreboard
 | Model | Tuned | Selection Metric (ROC-AUC) | Fold Std | Untuned | Baseline Floor |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| `gradient_boosting` | True | 0.727 | 0.014 | 0.727 | 0.500 |
-| `hist_gradient_boosting` | True | 0.727 | 0.016 | 0.717 | 0.500 |
-| `adaboost` | True | 0.726 | 0.016 | 0.723 | 0.500 |
-| `oblique_random_forest` | True | 0.726 | 0.015 | 0.685 | 0.500 |
-| `random_forest` | True | 0.726 | 0.013 | 0.683 | 0.500 |
-| `logistic_regression` | False | 0.719 | 0.014 | 0.719 | 0.500 |
-| `decision_tree` | True | 0.717 | 0.017 | 0.604 | 0.500 |
-| `naive_bayes` | True | 0.705 | 0.012 | 0.685 | 0.500 |
-| `dummy` | False | 0.500 | 0.000 | 0.500 | 0.500 |
+| gradient_boosting | True | 0.727 | 0.014 | 0.727 | 0.500 |
+| hist_gradient_boosting | True | 0.727 | 0.016 | 0.717 | 0.500 |
+| adaboost | True | 0.726 | 0.016 | 0.723 | 0.500 |
+| oblique_random_forest | True | 0.726 | 0.015 | 0.685 | 0.500 |
+| random_forest | True | 0.726 | 0.013 | 0.683 | 0.500 |
+| logistic_regression | False | 0.719 | 0.014 | 0.719 | 0.500 |
+| decision_tree | True | 0.717 | 0.017 | 0.604 | 0.500 |
+| naive_bayes | True | 0.705 | 0.012 | 0.685 | 0.500 |
+| dummy | False | 0.500 | 0.000 | 0.500 | 0.500 |
 
 **Selection metric**:
-I chose **ROC-AUC** because the goal with COMPAS is to rank people by their risk of reoffending, not just guess "yes" or "no" at a fixed 0.5 threshold. Accuracy only checks if predictions are above or below 0.5, while ROC-AUC evaluates how well the model orders probabilities across all cutoffs. It is also more stable across folds, which makes comparing the models fairer.
+I chose ROC-AUC because the goal with COMPAS is to rank people by their risk of reoffending, not just guess "yes" or "no" at a fixed 0.5 threshold. Accuracy only checks if predictions are above or below 0.5, while ROC-AUC evaluates how well the model orders probabilities across all cutoffs. It is also more stable across folds, which makes comparing the models fairer.
 
 
 
