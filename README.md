@@ -17,6 +17,7 @@ This project focuses on developing a machine learning pipeline to predict two-ye
 | **5** | Hyperparameter tuning without leakage | Introduces automated tuning with Optuna; instead of static defaults, models are optimized via nested cross-validation to tune parameters honestly without data leakage or optimism bias. |
 | **6** | Ensembles in depth | Expands beyond a single tuned tree to ensemble architectures (`oblique_random_forest` and `adaboost`); adds corrected paired t-tests to verify if performance gains exceed cross-validation variance. |
 | **7** | Gradient boosting + evaluating with probabilities | Introduces `gradient_boosting`, `hist_gradient_boosting`, and `naive_bayes`; switches evaluation to multi-metric out-of-fold probabilities with `roc_auc` as the primary selection metric, adding automated scoreboard logging (`runs.csv`) and paired t-test model comparisons. |
+| **8** | XGBoost + feature selection | Adds `xgboost` with regularization search spaces to the pipeline. Introduces leak-free feature selection via a new `VoteSelector` class (ensemble voting from Random Forest, Gradient Boosting, and L1 Logistic Regression), tuning `min_votes` jointly in nested cross-validation with temporary disk caching. |
 
 
 ## Week 2
@@ -144,6 +145,21 @@ Logistic Regression was the only model that improved after feature engineering, 
 
 **Selection metric**:
 I chose ROC-AUC because the goal with COMPAS is to rank people by their risk of reoffending, not just guess "yes" or "no" at a fixed 0.5 threshold. Accuracy only checks if predictions are above or below 0.5, while ROC-AUC evaluates how well the model orders probabilities across all cutoffs. It is also more stable across folds, which makes comparing the models fairer.
+
+
+## Week 8: 
+
+### Feature Selection Analysis (XGBoost)
+| Model | Tuned | Feature Selection | ROC-AUC (mean ± std) | Features Kept |
+| :--- | :---: | :---: | :---: | :---: |
+| `xgboost` | True | `min_votes 1` | 0.725 ± 0.012 | 2 of 10 (`numeric__age`, `numeric__priors_count`) |
+| `xgboost` | True | `off` | 0.728 ± 0.014 | 10 of 10 (all features) |
+
+**Analysis & Decision:**
+Comparing the tuned XGBoost model with and without feature selection using the corrected paired t-test yields a mean difference of -0.0034 (t = -1.2073, p = 0.2938, wins 1/5). Because the p-value is well above 0.05, the slight drop in validation performance is not statistically significant and remains within cross-validation variance. The `VoteSelector` pruned 8 out of 10 features, retaining only the two strongest predictors: `numeric__age` and `numeric__priors_count`.
+
+I would keep feature selection enabled in the pipeline. Even though using all features scored slightly higher (0.728 vs 0.725), reducing the feature space to only 2 variables makes the model much simpler, faster and less prone to overfitting.
+
 
 
 
