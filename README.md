@@ -155,7 +155,6 @@ I chose ROC-AUC because the goal with COMPAS is to rank people by their risk of 
 | `xgboost` | True | `min_votes 1` | 0.725 ± 0.012 | 2 of 10 (`numeric__age`, `numeric__priors_count`) |
 | `xgboost` | True | `off` | 0.728 ± 0.014 | 10 of 10 (all features) |
 
-**Analysis & Decision:**
 Comparing the tuned XGBoost model with and without feature selection using the corrected paired t-test yields a mean difference of -0.0034 (t = -1.2073, p = 0.2938, wins 1/5). Because the p-value is well above 0.05, the slight drop in validation performance is not statistically significant and remains within cross-validation variance. The `VoteSelector` pruned 8 out of 10 features, retaining only the two strongest predictors: `numeric__age` and `numeric__priors_count`.
 
 I would keep feature selection enabled in the pipeline. Even though using all features scored slightly higher (0.728 vs 0.725), reducing the feature space to only 2 variables makes the model much simpler, faster and less prone to overfitting.
