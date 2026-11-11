@@ -82,7 +82,7 @@ model:
 # Learned step between preprocessing and the model: keeps the features that at least
 # min_votes of three models (random forest, gradient boosting, L1 logistic regression) choose.
 feature_selection:
-  enabled: false
+  enabled: true
   min_votes: 2                                      # 1 (keep almost all) .. 3 (keep only unanimous)
   random_state: 42
   search_space:                                     # tuned together with the model when tuning is on

@@ -1,5 +1,5 @@
 """
-Entry point: `python main.py`.
+Entry point: `python main.py` or `python main.py config_adult.yaml`.
 
 load config -> load and clean data -> drop duplicate rows (training only) -> features/target
 -> lock the test set -> cross-validate the pipeline (preprocessing, feature selection if enabled,
@@ -7,7 +7,9 @@ model) on the development set (several metrics, and the no-model floor on the sa
 -> [if tuning is enabled: nested CV of the tuning procedure, then tuning on all development rows]
 -> out-of-fold reports -> refit on all development rows -> scoreboard + full report
 """
+import os
 import shutil
+import sys
 import tempfile
 from datetime import datetime
 
@@ -30,7 +32,8 @@ def load_config(path: str = "config.yaml") -> dict:
 
 
 def main():
-    config = load_config()
+    config_file = sys.argv[1] if len(sys.argv) > 1 else "config.yaml"
+    config = load_config(config_file)
     run = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_type = config["model"]["type"]
 
@@ -83,7 +86,7 @@ def main():
     if tuning_enabled:
         search_spaces = tuning_config.get("search_spaces") or {}
         if model_type not in search_spaces:
-            raise ValueError(f"tuning is enabled but config.yaml has no tuning.search_spaces for "
+            raise ValueError(f"tuning is enabled but config has no tuning.search_spaces for "
                              f"'{model_type}'. Add one, or set tuning.enabled: false.")
         search_space = dict(search_spaces[model_type])
         if selection_enabled:
@@ -142,6 +145,32 @@ def main():
              .to_string(index=False, float_format=lambda v: f"{v:.3f}"))
     print(f"\nScoreboard (runs on the same data and metric; best first)\n{board}")
     report += f"\nScoreboard:\n{board}\n"
+
+    # Predict on new unlabelled data if present (e.g., adult_new.csv for Option A)
+    new_data_path = "adult_new.csv"
+    if os.path.exists(new_data_path) and config["data"]["target"] == "income_over_50k":
+        print(f"\nPredicting on new data from {new_data_path}...")
+        df_new_raw = load_data(new_data_path)
+        df_new_clean = clean_dataset(df_new_raw, config["diagnostics"])
+        
+        target_col = config["data"]["target"]
+        target_config = {**config["data"], "target": None}
+        X_new, _, _ = split_features_target(df_new_clean, target_config, mnar_sources)
+        
+        probs_new = pipeline.predict_proba(X_new)[:, 1]
+        preds_new = (probs_new >= 0.5).astype(int)
+        
+        id_col = config["diagnostics"].get("id_column", "id")
+        df_preds = pd.DataFrame({
+            id_col: df_new_raw[id_col],
+            "probability": probs_new,
+            "prediction": preds_new
+        })
+        
+        out_dir = config.get("output", {}).get("results_dir", "results")
+        out_pred_path = os.path.join(out_dir, "adult_new_predictions.csv")
+        df_preds.to_csv(out_pred_path, index=False)
+        print(f"Saved {len(df_preds)} predictions to {out_pred_path}")
 
     shutil.rmtree(cache_dir, ignore_errors=True)
     path = save_run(config.get("output", {}).get("results_dir", "results"), run, config, report)

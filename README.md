@@ -18,6 +18,7 @@ This project focuses on developing a machine learning pipeline to predict two-ye
 | **6** | Ensembles in depth | Expands beyond a single tuned tree to ensemble architectures (`oblique_random_forest` and `adaboost`); adds corrected paired t-tests to verify if performance gains exceed cross-validation variance. |
 | **7** | Gradient boosting + evaluating with probabilities | Introduces `gradient_boosting`, `hist_gradient_boosting`, and `naive_bayes`; switches evaluation to multi-metric out-of-fold probabilities with `roc_auc` as the primary selection metric, adding automated scoreboard logging (`runs.csv`) and paired t-test model comparisons. |
 | **8** | XGBoost + feature selection | Adds `xgboost` with regularization search spaces to the pipeline. Introduces leak-free feature selection via a new `VoteSelector` class (ensemble voting from Random Forest, Gradient Boosting, and L1 Logistic Regression), tuning `min_votes` jointly in nested cross-validation with temporary disk caching. |
+| **9** | Beyond COMPAS (Option A: Adult dataset) | Refactored the pipeline to eliminate binary/COMPAS-specific assumptions (e.g. dynamic `score_text` fairness checks and argument-based config loading), successfully training XGBoost on the Adult income dataset and predicting 2,000 new unlabelled instances. |
 
 
 ## Week 2
@@ -160,11 +161,34 @@ Comparing the tuned XGBoost model with and without feature selection using the c
 I would keep feature selection enabled in the pipeline. Even though using all features scored slightly higher (0.728 vs 0.725), reducing the feature space to only 2 variables makes the model much simpler, faster and less prone to overfitting.
 
 
+## Week 9: Beyond COMPAS (Option A - Adult Dataset)
 
+### Running the pipeline
 
+To run the Adult dataset configuration, execute:
+```powershell
+python main.py config_adult.yaml
+```
 
+### What broke, why it broke, and how it was fixed
 
+| Issue | Cause | Solution |
+| :--- | :---: | :---: |
+| KeyError: 'score_text' | fairness_report hardcoded COMPAS's score_text column to calculate COMPAS FPR | Added a conditional check if "score_text" in df.columns: so fairness reports run dynamically on any dataset |
+| KeyError: 'y_pred_compas' | The model list loop in fairness_report assumed y_pred_compas always existed | Dynamically populated models_to_report based on column availability |
 
+### Results and Target Scores Comparison
 
+| Metric | Target | No model | XGBoost Tuned Model |
+|---|---|---|---|
+| ROC-AUC | **≥ 0.90** | 0.50 | 0.910 |
+| Accuracy | **≥ 0.855** | 0.76 | 0.858 |
+| F1 | **≥ 0.66** | 0.00 | 0.675 |
 
+### Features kept
 
+The VoteSelector tuned select__min_votes: 2 and reduced features from 37 to 8 (numeric__age, numeric__education_num, numeric__capital_gain, numeric__capital_loss, numeric__hours_per_week, categorical__marital_status, categorical__occupation, categorical__relationship). All 25 anonymised v01–v25 features were automatically discarded as non-essential.
+
+### Conclusion
+
+The hardest assumption to identify was in the fairness reporting function, which relied on COMPAS-specific column names (score_text) to benchmark false-positive rates. Reaching the target scores required proper cleaning of text placeholders (?), handling missing value indicators for occupation/workclass, and scaling numerical features appropriately. Feature selection successfully simplified the model by discarding all 25 undocumented v variables while maintaining an impressive ROC-AUC of 0.910.
