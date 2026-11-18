@@ -19,7 +19,7 @@ This project focuses on developing a machine learning pipeline to predict two-ye
 | **7** | Gradient boosting + evaluating with probabilities | Introduces `gradient_boosting`, `hist_gradient_boosting`, and `naive_bayes`; switches evaluation to multi-metric out-of-fold probabilities with `roc_auc` as the primary selection metric, adding automated scoreboard logging (`runs.csv`) and paired t-test model comparisons. |
 | **8** | XGBoost + feature selection | Adds `xgboost` with regularization search spaces to the pipeline. Introduces leak-free feature selection via a new `VoteSelector` class (ensemble voting from Random Forest, Gradient Boosting, and L1 Logistic Regression), tuning `min_votes` jointly in nested cross-validation with temporary disk caching. |
 | **9** | Beyond COMPAS (Option A: Adult dataset) | Refactored the pipeline to eliminate binary/COMPAS-specific assumptions (e.g. dynamic `score_text` fairness checks and argument-based config loading), successfully training XGBoost on the Adult income dataset and predicting 2,000 new unlabelled instances. |
-
+| **10** | Missing values & model deployment | Added leak-free numeric imputers (`knn`, `iterative`, `random_forest`) scaled prior to imputation, compared strategies via corrected paired t-tests, serialized the fitted pipeline with `joblib`, and built `predict.py` for CLI inference on unlabelled data. |
 
 ## Week 2
 
@@ -192,3 +192,26 @@ The VoteSelector tuned select__min_votes: 2 and reduced features from 37 to 8 (n
 ### Conclusion
 
 The hardest assumption to identify was in the fairness reporting function, which relied on COMPAS-specific column names (score_text) to benchmark false-positive rates. Reaching the target scores required proper cleaning of text placeholders (?), handling missing value indicators for occupation/workclass, and scaling numerical features appropriately. Feature selection successfully simplified the model by discarding all 25 undocumented v variables while maintaining an impressive ROC-AUC of 0.910.
+
+
+## Week 10: Missing Values and Model Deployment
+
+### Missing values
+
+| Imputer | Tuned | ROC-AUC (mean ± std) | Mean Diff vs Median | Wins | t-stat | p-value |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| median | False | 0.721 ± 0.013 | — | — | — | — |
+| knn | False | 0.717 ± 0.013 | -0.0037 | 0/5 | -2.584 | 0.061 |
+| iterative | False | 0.721 ± 0.014 | +0.0001 | 2/5 | +0.069 | 0.948 |
+| random_forest | False | 0.721 ± 0.013 | +0.0002 | 2/5 | +0.249 | 0.815 |
+
+I am keeping median as the default numeric imputer. The corrected paired t-tests show no statistically significant improvement from iterative ($p = 0.948$) or random_forest ($p = 0.815$), while knn slightly degrades performance ($p = 0.061$). Because numeric imputers only observe the five weakly correlated numeric columns and MNAR flags already capture informative missingness, median offers the same predictive accuracy at a fraction of the computational cost.
+
+### Predicting new data
+
+To generate predictions for new unlabelled records using the saved pipeline (`models/model.joblib`), run:
+```powershell
+python predict.py data/compas_new_people.csv predictions.csv
+```
+
+The output file (`predictions.csv`) contains one row for every input row (preserving duplicates, handling unseen categories, and imputing missing placeholders), with three columns: `id`, `probability` (predicted probability of the positive class), and `prediction` (binary class decision at the `0.5` threshold).
