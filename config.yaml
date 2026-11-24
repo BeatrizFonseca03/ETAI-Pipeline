@@ -82,6 +82,13 @@ model:
   # gradient_boosting:      {random_state: 42}
   # xgboost:                {n_estimators: 300, learning_rate: 0.05, max_depth: 4, random_state: 42, n_jobs: -1}
 
+# Learned step after preprocessing: adds an `anomaly_score` column (higher = more unusual than
+# the training rows), from a detector fitted on the training rows only.
+anomaly:
+  method: "lof"                                    # none | isolation_forest | lof
+  n_neighbors: 20                                   # lof: larger than the largest group of identical rows
+  random_state: 42                                  # isolation_forest
+
 # Learned step between preprocessing and the model: keeps the features that at least
 # min_votes of three models (random forest, gradient boosting, L1 logistic regression) choose.
 feature_selection:
@@ -92,7 +99,7 @@ feature_selection:
     select__min_votes: {type: int, low: 1, high: 3}
 
 tuning:
-  enabled: true
+  enabled: false
   n_trials: 30
   n_splits: 5                                       # folds that score each candidate
   random_state: 42                                  # seeds the sampler and those folds
@@ -143,4 +150,6 @@ tuning:
 output:
   results_dir: "results"
   model_path: "models/model.joblib"                 # the final fitted pipeline, used by predict.py (overwritten each run)
-  scoreboard: "results/runs.csv"                    # one row per run; delete it when the data, cleaning or folds change
+  # One row per run. The board ranks every run on the same data, whatever its preprocessing:
+  # compare runs that differ in one setting. Delete it when the data, cleaning or folds change.
+  scoreboard: "results/runs.csv"

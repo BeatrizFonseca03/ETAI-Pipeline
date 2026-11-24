@@ -2,8 +2,8 @@
 Entry point: `python main.py`.
 
 load config -> load and clean data -> drop duplicate rows (training only) -> features/target
--> lock the test set -> cross-validate the pipeline (preprocessing, feature selection if enabled,
-model) on the development set (several metrics, and the no-model floor on the same folds)
+-> lock the test set -> cross-validate the pipeline (preprocessing, anomaly score and feature
+selection if enabled, model) on the development set (several metrics, and the no-model floor on the same folds)
 -> [if tuning is enabled: nested CV of the tuning procedure, then tuning on all development rows]
 -> out-of-fold reports -> refit on all development rows -> scoreboard + full report
 -> the refit pipeline saved to disk, for `predict.py`
@@ -60,14 +60,18 @@ def main():
     n_jobs = cv_config.get("n_jobs", 1)
     selection_config = config.get("feature_selection") or {}
     selection_enabled = selection_config.get("enabled", False)
+    anomaly_config = config.get("anomaly") or {}
+    anomaly_method = anomaly_config.get("method", "none")
     print(f"Model: {model_type}   |   selection metric: {selection_metric}   |   "
           f"{cv_config['n_splits']}-fold CV   |   feature selection: "
           f"{'min_votes ' + str(selection_config.get('min_votes', 2)) if selection_enabled else 'off'}   |   "
-          f"numeric imputer: {config['preprocessing'].get('imputation', {}).get('numeric_strategy', 'median')}")
+          f"numeric imputer: {config['preprocessing'].get('imputation', {}).get('numeric_strategy', 'median')}   |   "
+          f"anomaly score: {anomaly_method}")
     print(f"Data:  {len(X_dev)} development rows   |   {len(X_test)} test rows locked away (not used)")
 
     cache_dir = tempfile.mkdtemp(prefix="pipeline_cache_")       # deleted at the end of the run
-    pipeline = build_pipeline(config["preprocessing"], config["model"], selection_config, memory=cache_dir)
+    pipeline = build_pipeline(config["preprocessing"], config["model"], selection_config, memory=cache_dir,
+                              anomaly_config=anomaly_config)
     floor_pipeline = build_pipeline(config["preprocessing"], {"type": "dummy"})
     floor_scores, _ = cross_validate_pipeline(floor_pipeline, X_dev, y_dev, cv,
                                               {selection_metric: scorers[selection_metric]}, selection_metric, n_jobs)
@@ -127,6 +131,8 @@ def main():
     refit = f"Final model: {model_type} refit on all {len(X_dev)} development rows."
     if selection_enabled:
         all_features = pipeline.named_steps["prep"].get_feature_names_out()
+        if "anomaly" in pipeline.named_steps:
+            all_features = pipeline.named_steps["anomaly"].get_feature_names_out(all_features)
         kept = pipeline.named_steps["select"].get_feature_names_out(all_features)
         refit += f"\nFeatures kept: {len(kept)} of {len(all_features)}: {', '.join(kept)}"
     report += "\n" + refit + "\n"
@@ -134,6 +140,7 @@ def main():
     row = {"run": run, "data": config["data"]["path"], "model": model_type, "tuned": tuning_enabled,
            "encoder": config["preprocessing"]["encoder"], "scaler": config["preprocessing"]["scaler"],
            "imputer": config["preprocessing"].get("imputation", {}).get("numeric_strategy", "median"),
+           "anomaly": anomaly_method,
            "feature_selection": (f"min_votes {pipeline.named_steps['select'].min_votes}" if selection_enabled else "off"),
            "params": str(config["model"].get("params")), "tuned_params": str(study.best_params) if tuning_enabled else "",
            "metric": selection_metric, "mean": final_scores["validation"].mean(),
@@ -142,7 +149,7 @@ def main():
     runs = save_scores(config.get("output", {}).get("scoreboard", "results/runs.csv"), row)
     same = runs[(runs["data"] == row["data"]) & (runs["metric"] == selection_metric)]
     board = (same.sort_values("mean", ascending=False)
-             [["run", "model", "tuned", "imputer", "feature_selection", "mean", "std", "untuned", "floor"]]
+             [["run", "model", "tuned", "imputer", "anomaly", "feature_selection", "mean", "std", "untuned", "floor"]]
              .rename(columns={"mean": selection_metric})
              .to_string(index=False, float_format=lambda v: f"{v:.3f}"))
     print(f"\nScoreboard (runs on the same data and metric; best first)\n{board}")

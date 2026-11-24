@@ -20,6 +20,8 @@ This project focuses on developing a machine learning pipeline to predict two-ye
 | **8** | XGBoost + feature selection | Adds `xgboost` with regularization search spaces to the pipeline. Introduces leak-free feature selection via a new `VoteSelector` class (ensemble voting from Random Forest, Gradient Boosting, and L1 Logistic Regression), tuning `min_votes` jointly in nested cross-validation with temporary disk caching. |
 | **9** | Beyond COMPAS (Option A: Adult dataset) | Refactored the pipeline to eliminate binary/COMPAS-specific assumptions (e.g. dynamic `score_text` fairness checks and argument-based config loading), successfully training XGBoost on the Adult income dataset and predicting 2,000 new unlabelled instances. |
 | **10** | Missing values & model deployment | Added leak-free numeric imputers (`knn`, `iterative`, `random_forest`) scaled prior to imputation, compared strategies via corrected paired t-tests, serialized the fitted pipeline with `joblib`, and built `predict.py` for CLI inference on unlabelled data. |
+| **11** | Outliers & anomaly detection | Implemented leak-free `AnomalyScore` transformer (`isolation_forest` and `lof`) inside the pipeline after preprocessing, analyzed recidivism rates among top anomalies, and evaluated predictive impact via cross-validation. |
+
 
 ## Week 2
 
@@ -214,4 +216,26 @@ To generate predictions for new unlabelled records using the saved pipeline (`mo
 python predict.py data/compas_new_people.csv predictions.csv
 ```
 
-The output file (`predictions.csv`) contains one row for every input row (preserving duplicates, handling unseen categories, and imputing missing placeholders), with three columns: `id`, `probability` (predicted probability of the positive class), and `prediction` (binary class decision at the `0.5` threshold).
+The output file (`predictions.csv`) contains one row for every input row (preserving duplicates, handling unseen categories, and imputing missing placeholders), with three columns: `id`, `probability` (predicted probability of the positive class), and `prediction` (binary class decision at the 0.5 threshold).
+
+
+## Week 11: Outliers and Anomaly Detection
+
+### Hypothesis
+I expect adding an `anomaly_score` feature to provide little to no improvement on COMPAS. Recidivism occurs in ~45% of the dataset, making it a common outcome rather than a rare anomaly. Furthermore, tree-based models like XGBoost can already isolate extreme values in `age` and `priors_count` directly without needing a separate anomaly score.
+
+### Anomaly Recidivism Rates and Cross-Validation Results
+
+Checking the recidivism rate (`two_year_recid`) among the top 5% most unusual individuals in the development set:
+* **Overall development set:** 0.451 (45.1%)
+* **Top 5% by Isolation Forest:** 0.597 (59.7%)
+* **Top 5% by LOF (`n_neighbors=20`):** 0.559 (55.9%)
+
+| Anomaly Method | Tuned | Imputer | Feature Selection | ROC-AUC (mean ± std) | Features Kept |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `none` | False | `median` | `min_votes 2` | 0.721 ± 0.013 | 2 of 10 (`numeric__age`, `numeric__priors_count`) |
+| `lof` | False | `median` | `min_votes 2` | 0.715 ± 0.013 | 2 of 11 (`numeric__age`, `numeric__priors_count`) |
+| `isolation_forest` | False | `median` | `min_votes 2` | 0.714 ± 0.013 | 2 of 11 (`numeric__age`, `numeric__priors_count`) |
+
+### Conclusion
+My initial hypothesis was confirmed: the anomaly score did not improve model performance (ROC-AUC shifted slightly from 0.721 to 0.715, well within cross-validation variance). Although the most anomalous 5% of defendants do reoffend at a higher rate, `VoteSelector` consistently pruned `anomaly_score` out of the final feature set because `numeric__age` and `numeric__priors_count` already capture that risk signal directly. Therefore, `anomaly.method` is kept as `"none"` by default.
